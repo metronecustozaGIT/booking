@@ -371,22 +371,33 @@ function sendBookingRequest() {
     fetch(CONFIG.webAppUrl, {
     method: 'POST',
     headers: {
-        'Content-Type': 'application/json',
+        'Content-Type': 'application/json'
     },
     body: JSON.stringify(bookingData)
 })
+.then(response => {
+    if (!response.ok) {
+        throw new Error('Server error');
+    }
+    return response.json();
+})
+.then(result => {
+    console.log('Apps Script response:', result);
 
-    .then(response => {
-        console.log('Request sent successfully');
-        document.getElementById('confirmation-email').textContent = state.guestData.email;
-        goToStep('confirmation');
-    })
-    .catch(error => {
-        console.error('Error sending request:', error);
-        alert('Error sending request. Please contact us at ' + CONFIG.email);
-        sendButton.textContent = originalText;
-        sendButton.disabled = false;
-    });
+    if (result.result !== 'success') {
+        throw new Error('Script returned error');
+    }
+
+    document.getElementById('confirmation-email').textContent = state.guestData.email;
+    goToStep('confirmation');
+})
+.catch(error => {
+    console.error('Error sending request:', error);
+    alert('Error sending request. Please contact us at ' + CONFIG.email);
+    sendButton.textContent = originalText;
+    sendButton.disabled = false;
+});
+
 }
 
 function resetWidget() {
