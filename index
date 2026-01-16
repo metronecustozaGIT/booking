@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prenota Il Metrone</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <style>
+        :root {
+            /* COLORI DEL BRAND - Modifica qui se vuoi cambiare colore */
+            --primary-color: #333333; /* Grigio scuro elegante */
+            --accent-color: #d4af37;  /* Oro scuro per i dettagli */
+            --bg-color: #ffffff;
+            --text-color: #333333;
+        }
+
+        body {
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: transparent; /* Trasparente per l'iframe */
+            color: var(--text-color);
+        }
+
+        .booking-container {
+            max-width: 400px;
+            margin: 0 auto;
+            background: var(--bg-color);
+            padding: 0; /* Padding gestito dall'esterno se necessario */
+        }
+
+        h2 {
+            text-align: center;
+            color: var(--primary-color);
+            font-weight: 300;
+            margin-bottom: 25px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-size: 1.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #555;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box; /* Importante per padding */
+            font-size: 1rem;
+            font-family: inherit;
+            transition: border-color 0.3s;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            border-color: var(--primary-color);
+            outline: none;
+        }
+
+        .dates-row {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .dates-row .form-group {
+            flex: 1;
+        }
+
+        .btn-submit {
+            width: 100%;
+            background-color: var(--primary-color);
+            color: white;
+            padding: 15px;
+            border: none;
+            border-radius: 4px;
+            font-size: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            margin-top: 10px;
+        }
+
+        .btn-submit:hover {
+            background-color: #000;
+        }
+
+        .btn-submit:disabled {
+            background-color: #999;
+            cursor: not-allowed;
+        }
+
+        /* Messaggi di stato */
+        #statusMessage {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 4px;
+            text-align: center;
+            display: none;
+            font-size: 0.9rem;
+        }
+        .success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+
+    <div class="booking-container">
+        <h2>Richiesta Disponibilità<br><span style="font-size: 0.7em; opacity: 0.7;">Il Metrone - Custoza</span></h2>
+        
+        <form id="bookingForm">
+            <div class="dates-row">
+                <div class="form-group">
+                    <label>Check-in</label>
+                    <input type="text" id="checkIn" placeholder="Seleziona data" required>
+                </div>
+                <div class="form-group">
+                    <label>Check-out</label>
+                    <input type="text" id="checkOut" placeholder="Seleziona data" required>
+                </div>
+            </div>
+
+            <div class="dates-row">
+                <div class="form-group">
+                    <label>Adulti</label>
+                    <input type="number" id="adults" min="1" value="2" required>
+                </div>
+                <div class="form-group">
+                    <label>Bambini</label>
+                    <input type="number" id="children" min="0" value="0">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Nome e Cognome</label>
+                <input type="text" id="guestName" placeholder="Il tuo nome" required>
+            </div>
+
+            <div class="form-group">
+                <label>Email</label>
+                <input type="email" id="guestEmail" placeholder="latua@email.com" required>
+            </div>
+
+            <div class="form-group">
+                <label>Telefono</label>
+                <input type="tel" id="guestPhone" placeholder="+39 ..." required>
+            </div>
+
+            <div class="form-group">
+                <label>Viaggi con animali?</label>
+                <select id="pets">
+                    <option value="no">No</option>
+                    <option value="yes">Sì (Supplemento richiesto)</option> 
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Messaggio / Richieste Speciali</label>
+                <textarea id="specialRequests" rows="3" placeholder="Orario di arrivo, intolleranze, ecc."></textarea>
+            </div>
+
+            <button type="submit" class="btn-submit" id="submitBtn">Invia Richiesta</button>
+        </form>
+
+        <div id="statusMessage"></div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script>
+        // --- CONFIGURAZIONE ---
+        // INSERISCI QUI SOTTO IL TUO URL DI GOOGLE APPS SCRIPT
+        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxUnIBy_4bhDxE2K7Yo0xWRohSHGSp15mKmEN5cqpsFDdQpRxLlwMsGTxECaDa68Gg/exec";
+        
+        // Inizializza Calendario
+        const checkInPicker = flatpickr("#checkIn", {
+            minDate: "today",
+            dateFormat: "d/m/Y",
+            onChange: function(selectedDates, dateStr, instance) {
+                checkOutPicker.set('minDate', dateStr);
+                // Apre automaticamente il checkout dopo aver scelto il checkin
+                setTimeout(() => checkOutPicker.open(), 100);
+            }
+        });
+
+        const checkOutPicker = flatpickr("#checkOut", {
+            minDate: "today",
+            dateFormat: "d/m/Y"
+        });
+
+        // Gestione Invio Form
+        document.getElementById('bookingForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const btn = document.getElementById('submitBtn');
+            const msg = document.getElementById('statusMessage');
+            
+            // UI Loading
+            btn.disabled = true;
+            btn.innerText = "Invio in corso...";
+            msg.style.display = 'none';
+
+            // Raccogli dati
+            const formData = {
+                checkIn: document.getElementById('checkIn').value,
+                checkOut: document.getElementById('checkOut').value,
+                adults: document.getElementById('adults').value,
+                children: document.getElementById('children').value,
+                totalGuests: parseInt(document.getElementById('adults').value) + parseInt(document.getElementById('children').value),
+                guestName: document.getElementById('guestName').value,
+                guestEmail: document.getElementById('guestEmail').value,
+                guestPhone: document.getElementById('guestPhone').value,
+                pets: document.getElementById('pets').value,
+                specialRequests: document.getElementById('specialRequests').value,
+                nights: calculateNights(document.getElementById('checkIn').value, document.getElementById('checkOut').value)
+            };
+
+            // Invio a Google Script (usando no-cors o text/plain per evitare errori CORS complessi)
+            fetch(GOOGLE_SCRIPT_URL, {
+                method: 'POST',
+                body: JSON.stringify(formData)
+            })
+            .then(response => {
+                // Con Apps Script + fetch, spesso la risposta è opaca, ma se arriva qui è "andata"
+                showSuccess();
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                // Fallback: a volte fetch fallisce ma i dati arrivano. 
+                // Ma proviamo a mostrare errore.
+                showError();
+            });
+        });
+
+        function calculateNights(start, end) {
+            if(!start || !end) return 0;
+            const d1 = parseDate(start);
+            const d2 = parseDate(end);
+            return Math.max(0, (d2 - d1) / (1000 * 60 * 60 * 24));
+        }
+
+        function parseDate(str) {
+            const parts = str.split("/");
+            return new Date(parts[2], parts[1] - 1, parts[0]);
+        }
+
+        function showSuccess() {
+            const msg = document.getElementById('statusMessage');
+            const btn = document.getElementById('submitBtn');
+            const form = document.getElementById('bookingForm');
+            
+            msg.innerText = "Grazie! La tua richiesta è stata inviata. Ti risponderemo presto.";
+            msg.className = "success";
+            msg.style.display = "block";
+            
+            btn.innerText = "Inviato";
+            form.reset();
+            
+            // Opzionale: Nascondi form
+            // form.style.display = "none";
+        }
+
+        function showError() {
+            const msg = document.getElementById('statusMessage');
+            const btn = document.getElementById('submitBtn');
+            
+            msg.innerText = "Si è verificato un errore. Per favore scrivici via email o riprova.";
+            msg.className = "error";
+            msg.style.display = "block";
+            
+            btn.disabled = false;
+            btn.innerText = "Riprova";
+        }
+    </script>
+</body>
+</html>
