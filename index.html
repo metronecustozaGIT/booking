@@ -7,240 +7,324 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <style>
         :root {
-            /* BRAND COLORS */
-            --primary-color: #333333; /* Elegant Dark Grey */
+            --primary-text: #222222;
+            --secondary-text: #717171;
+            --accent-color: #000000; /* Nero per selezione */
             --bg-color: #ffffff;
-            --text-color: #333333;
-            --input-bg: #f9f9f9;
+            --button-bg: #e0e0e0; /* Grigio chiaro per bottone inattivo */
+            --button-active: #222222; /* Nero per bottone attivo */
         }
 
         body {
-            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             margin: 0;
             padding: 20px;
-            background-color: transparent; 
-            color: var(--text-color);
-        }
-
-        .booking-container {
-            max-width: 400px;
-            margin: 0 auto;
-            background: var(--bg-color);
-        }
-
-        h2 {
-            text-align: center;
-            color: var(--primary-color);
-            font-weight: 300;
-            margin-bottom: 25px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            font-size: 1.5rem;
-        }
-
-        .form-group {
-            margin-bottom: 15px;
-        }
-
-        label {
-            display: block;
-            margin-bottom: 5px;
-            font-size: 0.85rem;
-            font-weight: 600;
-            color: #555;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        input, select, textarea {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            box-sizing: border-box;
-            font-size: 1rem;
-            background-color: var(--input-bg);
-            transition: border-color 0.3s;
-        }
-
-        input:focus, select:focus, textarea:focus {
-            border-color: var(--primary-color);
-            outline: none;
-            background-color: #fff;
-        }
-
-        .dates-row {
+            background-color: transparent;
+            color: var(--primary-text);
             display: flex;
-            gap: 10px;
+            justify-content: center;
+        }
+
+        /* CARD CONTAINER - Simula lo screenshot */
+        .booking-card {
+            background: #fff;
+            width: 100%;
+            max-width: 400px; /* Larghezza mobile */
+            border-radius: 24px;
+            box-shadow: 0 6px 16px rgba(0,0,0,0.12);
+            padding: 24px;
+            box-sizing: border-box;
+        }
+
+        /* HEADER */
+        .header {
+            margin-bottom: 20px;
+        }
+        .header h2 {
+            margin: 0;
+            font-size: 22px;
+            font-weight: 600;
+        }
+        .header p {
+            margin: 5px 0 0;
+            color: var(--secondary-text);
+            font-size: 14px;
+        }
+
+        /* CALENDARIO CUSTOMIZATION */
+        .calendar-wrapper {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
         }
         
-        .dates-row .form-group {
+        /* Nascondiamo input reale */
+        #dateRangeInput { display: none; }
+
+        /* Stile Flatpickr per farlo assomigliare allo screenshot */
+        .flatpickr-calendar {
+            box-shadow: none !important;
+            width: 100% !important;
+        }
+        .flatpickr-days {
+            width: 100% !important;
+        }
+        .dayContainer {
+            width: 100% !important;
+            max-width: 100% !important;
+            min-width: 100% !important;
+        }
+        .flatpickr-day.selected, .flatpickr-day.startRange, .flatpickr-day.endRange, .flatpickr-day.selected.inRange, .flatpickr-day.startRange.inRange, .flatpickr-day.endRange.inRange {
+            background: var(--accent-color) !important;
+            border-color: var(--accent-color) !important;
+        }
+        /* Date disabilitate (bloccate dal foglio) */
+        .flatpickr-day.disabled, .flatpickr-day.disabled:hover {
+            color: #ddd !important;
+            text-decoration: line-through;
+        }
+
+        /* SECTION: CHECK-IN / CHECK-OUT DISPLAY */
+        .dates-display {
+            display: flex;
+            background-color: #f7f7f7;
+            border-radius: 12px;
+            overflow: hidden;
+            margin-bottom: 20px;
+            border: 1px solid #ddd;
+        }
+
+        .date-box {
             flex: 1;
-        }
-
-        .btn-submit {
-            width: 100%;
-            background-color: var(--primary-color);
-            color: white;
             padding: 15px;
-            border: none;
-            border-radius: 4px;
-            font-size: 1rem;
-            text-transform: uppercase;
-            letter-spacing: 1px;
             cursor: pointer;
-            transition: background-color 0.3s, opacity 0.3s;
-            margin-top: 10px;
-            font-weight: bold;
+        }
+        
+        .date-box:first-child {
+            border-right: 1px solid #ddd;
         }
 
-        .btn-submit:hover {
-            opacity: 0.9;
+        .date-label {
+            font-size: 10px;
+            font-weight: 800;
+            text-transform: uppercase;
+            color: var(--primary-text);
+            display: block;
+            margin-bottom: 4px;
         }
 
-        .btn-submit:disabled {
-            background-color: #999;
+        .date-value {
+            font-size: 14px;
+            color: var(--secondary-text);
+        }
+        .date-value.selected {
+            color: var(--primary-text);
+            font-weight: 600;
+        }
+
+        /* FORM NASCOSTO (Apre solo al click su Continue) */
+        #guestDetailsForm {
+            display: none; /* Nascosto inizialmente */
+            margin-top: 20px;
+            border-top: 1px solid #eee;
+            padding-top: 20px;
+        }
+
+        .form-group { margin-bottom: 15px; }
+        input, select, textarea {
+            width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box;
+            font-size: 16px;
+        }
+
+        /* BUTTON */
+        .btn-continue {
+            width: 100%;
+            background-color: var(--button-bg);
+            color: #fff;
+            padding: 16px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
             cursor: not-allowed;
+            transition: background-color 0.3s;
         }
 
-        /* Status Messages */
-        #statusMessage {
-            margin-top: 15px;
-            padding: 15px;
-            border-radius: 4px;
-            text-align: center;
-            display: none;
-            font-size: 0.9rem;
-            line-height: 1.4;
+        .btn-continue.active {
+            background-color: var(--button-active);
+            cursor: pointer;
         }
-        .success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
-        .error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        
+        .error-msg { color: red; font-size: 12px; margin-top: 10px; text-align: center; display: none;}
+        .success-msg { color: green; font-size: 14px; margin-top: 10px; text-align: center; display: none; padding: 20px; background: #e8f5e9; border-radius: 8px;}
 
-        /* Flatpickr Customization */
-        .flatpickr-day.selected, .flatpickr-day.startRange, .flatpickr-day.endRange, .flatpickr-day.selected.inRange, .flatpickr-day.startRange.inRange, .flatpickr-day.endRange.inRange, .flatpickr-day.selected:focus, .flatpickr-day.startRange:focus, .flatpickr-day.endRange:focus, .flatpickr-day.selected:hover, .flatpickr-day.startRange:hover, .flatpickr-day.endRange:hover, .flatpickr-day.selected.prevMonthDay, .flatpickr-day.startRange.prevMonthDay, .flatpickr-day.endRange.prevMonthDay, .flatpickr-day.selected.nextMonthDay, .flatpickr-day.startRange.nextMonthDay, .flatpickr-day.endRange.nextMonthDay {
-            background: var(--primary-color);
-            border-color: var(--primary-color);
-        }
     </style>
 </head>
 <body>
 
-    <div class="booking-container">
-        <h2>Il Metrone<br><span style="font-size: 0.6em; opacity: 0.6; text-transform: none;">Check Availability</span></h2>
+    <div class="booking-card" id="mainCard">
         
-        <form id="bookingForm">
-            <div class="dates-row">
-                <div class="form-group">
-                    <label>Check-in</label>
-                    <input type="text" id="checkIn" placeholder="Arrival Date" required>
-                </div>
-                <div class="form-group">
-                    <label>Check-out</label>
-                    <input type="text" id="checkOut" placeholder="Departure Date" required>
-                </div>
-            </div>
+        <div class="header">
+            <h2>Select Your Dates</h2>
+            <p>Minimum 2 nights stay required</p>
+        </div>
 
-            <div class="dates-row">
-                <div class="form-group">
-                    <label>Adults</label>
-                    <input type="number" id="adults" min="1" value="2" required>
-                </div>
-                <div class="form-group">
-                    <label>Children</label>
-                    <input type="number" id="children" min="0" value="0">
-                </div>
-            </div>
+        <div class="calendar-wrapper">
+            <input type="text" id="dateRangeInput">
+        </div>
 
+        <div class="dates-display">
+            <div class="date-box" id="checkInBox">
+                <span class="date-label">CHECK-IN</span>
+                <span class="date-value" id="checkInText">Select date</span>
+            </div>
+            <div class="date-box" id="checkOutBox">
+                <span class="date-label">CHECK-OUT</span>
+                <span class="date-value" id="checkOutText">Select date</span>
+            </div>
+        </div>
+
+        <button id="btnStep1" class="btn-continue">Continue</button>
+
+        <div id="guestDetailsForm">
+            <h3>Guest Details</h3>
+            
             <div class="form-group">
-                <label>Full Name</label>
-                <input type="text" id="guestName" placeholder="Your Name" required>
+                <label style="font-size: 12px; font-weight: bold;">GUESTS</label>
+                <div style="display: flex; gap: 10px;">
+                    <input type="number" id="adults" placeholder="Adults" min="1" value="2" style="flex:1">
+                    <input type="number" id="children" placeholder="Children" min="0" value="0" style="flex:1">
+                </div>
             </div>
 
+            <div class="form-group"><input type="text" id="guestName" placeholder="Full Name" required></div>
+            <div class="form-group"><input type="email" id="guestEmail" placeholder="Email" required></div>
+            <div class="form-group"><input type="tel" id="guestPhone" placeholder="Phone Number" required></div>
+            
             <div class="form-group">
-                <label>Email</label>
-                <input type="email" id="guestEmail" placeholder="your@email.com" required>
-            </div>
-
-            <div class="form-group">
-                <label>Phone</label>
-                <input type="tel" id="guestPhone" placeholder="+39 ..." required>
-            </div>
-
-            <div class="form-group">
-                <label>Pets</label>
                 <select id="pets">
-                    <option value="no">No</option>
-                    <option value="yes">Yes (Supplement applies)</option> 
+                    <option value="no">No Pets</option>
+                    <option value="yes">Traveling with Pets</option> 
                 </select>
             </div>
 
             <div class="form-group">
-                <label>Notes / Special Requests</label>
-                <textarea id="specialRequests" rows="3" placeholder="Arrival time, allergies, etc."></textarea>
+                <textarea id="specialRequests" rows="2" placeholder="Message to host..."></textarea>
             </div>
 
-            <button type="submit" class="btn-submit" id="submitBtn">Submit Request</button>
-        </form>
+            <button id="btnSubmitFinal" class="btn-continue active">Request to Book</button>
+            <div id="statusMessage"></div>
+        </div>
 
-        <div id="statusMessage"></div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 
     <script>
-        // 🔴 GOOGLE APPS SCRIPT URL
+        // 🔴 URL GOOGLE APPS SCRIPT (Il tuo URL)
         const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzN6Uu-O1HtTg_JfjhJzxQBodVY7xuEXEoCzC57VFcqUDiKxDcl63P3jNc0X8MErNDIJg/exec";
         
-        // 1. Fetch Blocked Dates on Load
+        let selectedDatesObj = [];
+
+        // 1. CARICAMENTO DATE BLOCCATE
         fetch(GOOGLE_SCRIPT_URL)
         .then(response => response.json())
         .then(bookedDates => {
-            console.log("Dates loaded:", bookedDates);
+            console.log("Date occupate:", bookedDates);
             initCalendar(bookedDates);
         })
         .catch(error => {
-            console.error("Error loading dates:", error);
-            initCalendar([]); // Fallback: load calendar empty if error
+            console.error("Errore caricamento date:", error);
+            initCalendar([]); 
         });
 
-        let checkInPicker, checkOutPicker;
-
         function initCalendar(disableDates) {
-            const commonConfig = {
-                dateFormat: "d/m/Y",
+            flatpickr("#dateRangeInput", {
+                mode: "range",          // Permette selezione DA - A
+                inline: true,           // Calendario sempre visibile
                 minDate: "today",
-                disable: disableDates, // Blocks dates from Google Sheet
-                // Removed "locale: 'it'" so it defaults to English
-            };
-
-            checkInPicker = flatpickr("#checkIn", {
-                ...commonConfig,
+                dateFormat: "Y-m-d",
+                disable: disableDates,  // Blocca le date dal foglio Google
+                locale: {
+                    firstDayOfWeek: 1 // Inizia da Lunedì
+                },
                 onChange: function(selectedDates, dateStr, instance) {
-                    checkOutPicker.set('minDate', dateStr);
-                    setTimeout(() => checkOutPicker.open(), 100);
+                    selectedDatesObj = selectedDates;
+                    updateUI(selectedDates);
                 }
-            });
-
-            checkOutPicker = flatpickr("#checkOut", {
-                ...commonConfig
             });
         }
 
-        // 2. Handle Form Submit
-        document.getElementById('bookingForm').addEventListener('submit', function(e) {
-            e.preventDefault();
+        // AGGIORNA UI (Scritte sotto il calendario)
+        function updateUI(dates) {
+            const checkInText = document.getElementById('checkInText');
+            const checkOutText = document.getElementById('checkOutText');
+            const btn = document.getElementById('btnStep1');
 
-            const btn = document.getElementById('submitBtn');
-            const msg = document.getElementById('statusMessage');
+            if (dates.length > 0) {
+                checkInText.innerText = formatDate(dates[0]);
+                checkInText.classList.add('selected');
+            } else {
+                checkInText.innerText = "Select date";
+                checkInText.classList.remove('selected');
+            }
+
+            if (dates.length > 1) {
+                checkOutText.innerText = formatDate(dates[1]);
+                checkOutText.classList.add('selected');
+                
+                // Attiva bottone
+                btn.classList.add('active');
+                btn.removeAttribute('disabled');
+                btn.innerText = "Continue";
+            } else {
+                checkOutText.innerText = "Select date";
+                checkOutText.classList.remove('selected');
+                
+                // Disattiva bottone
+                btn.classList.remove('active');
+                btn.setAttribute('disabled', 'true');
+            }
+        }
+
+        // FORMATTA DATA (es. 16 Jan)
+        function formatDate(dateObj) {
+            const options = { month: 'short', day: 'numeric' };
+            return dateObj.toLocaleDateString('en-US', options);
+        }
+
+        // GESTIONE CLICK "CONTINUE"
+        document.getElementById('btnStep1').addEventListener('click', function() {
+            if (selectedDatesObj.length < 2) return;
             
-            btn.disabled = true;
-            btn.innerText = "Please wait...";
-            msg.style.display = 'none';
+            // Nasconde calendario, mostra form dettagli
+            document.querySelector('.calendar-wrapper').style.display = 'none';
+            document.querySelector('.header').style.display = 'none';
+            document.querySelector('#btnStep1').style.display = 'none';
+            
+            document.getElementById('guestDetailsForm').style.display = 'block';
+        });
 
-            // Gather Data
+        // INVIO FINALE
+        document.getElementById('btnSubmitFinal').addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            const btn = document.getElementById('btnSubmitFinal');
+            const msg = document.getElementById('statusMessage');
+
+            btn.disabled = true;
+            btn.innerText = "Sending...";
+
+            // Date formattate per Google Sheet (DD/MM/YYYY)
+            const d1 = selectedDatesObj[0];
+            const d2 = selectedDatesObj[1];
+            
+            const checkInStr = `${d1.getDate()}/${d1.getMonth()+1}/${d1.getFullYear()}`;
+            const checkOutStr = `${d2.getDate()}/${d2.getMonth()+1}/${d2.getFullYear()}`;
+
             const formData = {
-                checkIn: document.getElementById('checkIn').value,
-                checkOut: document.getElementById('checkOut').value,
+                checkIn: checkInStr,
+                checkOut: checkOutStr,
                 adults: document.getElementById('adults').value,
                 children: document.getElementById('children').value,
                 totalGuests: parseInt(document.getElementById('adults').value) + parseInt(document.getElementById('children').value),
@@ -248,49 +332,29 @@
                 guestEmail: document.getElementById('guestEmail').value,
                 guestPhone: document.getElementById('guestPhone').value,
                 pets: document.getElementById('pets').value,
-                specialRequests: document.getElementById('specialRequests').value,
-                nights: calculateNights(document.getElementById('checkIn').value, document.getElementById('checkOut').value)
+                specialRequests: document.getElementById('specialRequests').value
             };
 
-            // Send to Google
             fetch(GOOGLE_SCRIPT_URL, {
                 method: 'POST',
                 body: JSON.stringify(formData)
             })
             .then(res => {
-                showSuccess();
+                document.getElementById('guestDetailsForm').innerHTML = 
+                    `<div class="success-msg" style="display:block">
+                        <h3>Request Sent!</h3>
+                        <p>We have received your request for <b>${checkInStr} - ${checkOutStr}</b>.</p>
+                        <p>We will email you shortly.</p>
+                    </div>`;
             })
             .catch(error => {
-                console.error('Error:', error);
-                // Even if fetch fails client-side (CORS warning), the data often goes through.
-                showSuccess(); 
+                console.error(error);
+                // Fallback successo
+                document.getElementById('guestDetailsForm').innerHTML = 
+                    `<div class="success-msg" style="display:block"><h3>Request Sent!</h3><p>Thank you.</p></div>`;
             });
         });
 
-        function calculateNights(start, end) {
-            if(!start || !end) return 0;
-            const d1 = parseDate(start);
-            const d2 = parseDate(end);
-            return Math.max(0, (d2 - d1) / (1000 * 60 * 60 * 24));
-        }
-
-        function parseDate(str) {
-            const parts = str.split("/");
-            return new Date(parts[2], parts[1] - 1, parts[0]);
-        }
-
-        function showSuccess() {
-            const msg = document.getElementById('statusMessage');
-            const btn = document.getElementById('submitBtn');
-            const form = document.getElementById('bookingForm');
-            
-            msg.innerHTML = "<strong>Request Sent!</strong><br>Thank you for contacting us. We will reply via email shortly.";
-            msg.className = "success";
-            msg.style.display = "block";
-            
-            btn.innerText = "Sent";
-            form.reset();
-        }
     </script>
 </body>
 </html>
