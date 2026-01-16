@@ -3,358 +3,176 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Book Il Metrone</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-    <style>
-        :root {
-            --primary-text: #222222;
-            --secondary-text: #717171;
-            --accent-color: #000000; /* Nero per selezione */
-            --bg-color: #ffffff;
-            --button-bg: #e0e0e0; /* Grigio chiaro per bottone inattivo */
-            --button-active: #222222; /* Nero per bottone attivo */
-        }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            margin: 0;
-            padding: 20px;
-            background-color: transparent;
-            color: var(--primary-text);
-            display: flex;
-            justify-content: center;
-        }
-
-        /* CARD CONTAINER - Simula lo screenshot */
-        .booking-card {
-            background: #fff;
-            width: 100%;
-            max-width: 400px; /* Larghezza mobile */
-            border-radius: 24px;
-            box-shadow: 0 6px 16px rgba(0,0,0,0.12);
-            padding: 24px;
-            box-sizing: border-box;
-        }
-
-        /* HEADER */
-        .header {
-            margin-bottom: 20px;
-        }
-        .header h2 {
-            margin: 0;
-            font-size: 22px;
-            font-weight: 600;
-        }
-        .header p {
-            margin: 5px 0 0;
-            color: var(--secondary-text);
-            font-size: 14px;
-        }
-
-        /* CALENDARIO CUSTOMIZATION */
-        .calendar-wrapper {
-            display: flex;
-            justify-content: center;
-            margin-bottom: 20px;
-        }
-        
-        /* Nascondiamo input reale */
-        #dateRangeInput { display: none; }
-
-        /* Stile Flatpickr per farlo assomigliare allo screenshot */
-        .flatpickr-calendar {
-            box-shadow: none !important;
-            width: 100% !important;
-        }
-        .flatpickr-days {
-            width: 100% !important;
-        }
-        .dayContainer {
-            width: 100% !important;
-            max-width: 100% !important;
-            min-width: 100% !important;
-        }
-        .flatpickr-day.selected, .flatpickr-day.startRange, .flatpickr-day.endRange, .flatpickr-day.selected.inRange, .flatpickr-day.startRange.inRange, .flatpickr-day.endRange.inRange {
-            background: var(--accent-color) !important;
-            border-color: var(--accent-color) !important;
-        }
-        /* Date disabilitate (bloccate dal foglio) */
-        .flatpickr-day.disabled, .flatpickr-day.disabled:hover {
-            color: #ddd !important;
-            text-decoration: line-through;
-        }
-
-        /* SECTION: CHECK-IN / CHECK-OUT DISPLAY */
-        .dates-display {
-            display: flex;
-            background-color: #f7f7f7;
-            border-radius: 12px;
-            overflow: hidden;
-            margin-bottom: 20px;
-            border: 1px solid #ddd;
-        }
-
-        .date-box {
-            flex: 1;
-            padding: 15px;
-            cursor: pointer;
-        }
-        
-        .date-box:first-child {
-            border-right: 1px solid #ddd;
-        }
-
-        .date-label {
-            font-size: 10px;
-            font-weight: 800;
-            text-transform: uppercase;
-            color: var(--primary-text);
-            display: block;
-            margin-bottom: 4px;
-        }
-
-        .date-value {
-            font-size: 14px;
-            color: var(--secondary-text);
-        }
-        .date-value.selected {
-            color: var(--primary-text);
-            font-weight: 600;
-        }
-
-        /* FORM NASCOSTO (Apre solo al click su Continue) */
-        #guestDetailsForm {
-            display: none; /* Nascosto inizialmente */
-            margin-top: 20px;
-            border-top: 1px solid #eee;
-            padding-top: 20px;
-        }
-
-        .form-group { margin-bottom: 15px; }
-        input, select, textarea {
-            width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box;
-            font-size: 16px;
-        }
-
-        /* BUTTON */
-        .btn-continue {
-            width: 100%;
-            background-color: var(--button-bg);
-            color: #fff;
-            padding: 16px;
-            border: none;
-            border-radius: 8px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: not-allowed;
-            transition: background-color 0.3s;
-        }
-
-        .btn-continue.active {
-            background-color: var(--button-active);
-            cursor: pointer;
-        }
-        
-        .error-msg { color: red; font-size: 12px; margin-top: 10px; text-align: center; display: none;}
-        .success-msg { color: green; font-size: 14px; margin-top: 10px; text-align: center; display: none; padding: 20px; background: #e8f5e9; border-radius: 8px;}
-
-    </style>
+    <title>Il Metrone Booking</title>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-
-    <div class="booking-card" id="mainCard">
-        
-        <div class="header">
-            <h2>Select Your Dates</h2>
-            <p>Minimum 2 nights stay required</p>
-        </div>
-
-        <div class="calendar-wrapper">
-            <input type="text" id="dateRangeInput">
-        </div>
-
-        <div class="dates-display">
-            <div class="date-box" id="checkInBox">
-                <span class="date-label">CHECK-IN</span>
-                <span class="date-value" id="checkInText">Select date</span>
-            </div>
-            <div class="date-box" id="checkOutBox">
-                <span class="date-label">CHECK-OUT</span>
-                <span class="date-value" id="checkOutText">Select date</span>
-            </div>
-        </div>
-
-        <button id="btnStep1" class="btn-continue">Continue</button>
-
-        <div id="guestDetailsForm">
-            <h3>Guest Details</h3>
+    <div class="booking-widget">
+        <div id="step-calendar" class="step active">
+            <h2>Select Dates</h2>
+            <p class="subtitle">Il Metrone - Custoza</p>
             
-            <div class="form-group">
-                <label style="font-size: 12px; font-weight: bold;">GUESTS</label>
-                <div style="display: flex; gap: 10px;">
-                    <input type="number" id="adults" placeholder="Adults" min="1" value="2" style="flex:1">
-                    <input type="number" id="children" placeholder="Children" min="0" value="0" style="flex:1">
+            <div class="calendar-container">
+                <div class="calendar-header">
+                    <button id="prev-month" class="nav-btn" aria-label="Previous month">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="15 18 9 12 15 6"></polyline>
+                        </svg>
+                    </button>
+                    <h3 id="current-month"></h3>
+                    <button id="next-month" class="nav-btn" aria-label="Next month">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="9 18 15 12 9 6"></polyline>
+                        </svg>
+                    </button>
+                </div>
+                
+                <div class="calendar-grid" id="calendar-grid">
+                    </div>
+                
+                <div class="selected-dates" id="selected-dates-display">
+                    <div class="date-box">
+                        <label>Check-in</label>
+                        <span id="checkin-display">Select date</span>
+                    </div>
+                    <div class="nights-display" id="nights-display" style="display: none;">
+                        <span id="nights-count">0</span> nights
+                    </div>
+                    <div class="date-box">
+                        <label>Check-out</label>
+                        <span id="checkout-display">Select date</span>
+                    </div>
                 </div>
             </div>
-
-            <div class="form-group"><input type="text" id="guestName" placeholder="Full Name" required></div>
-            <div class="form-group"><input type="email" id="guestEmail" placeholder="Email" required></div>
-            <div class="form-group"><input type="tel" id="guestPhone" placeholder="Phone Number" required></div>
             
-            <div class="form-group">
-                <select id="pets">
-                    <option value="no">No Pets</option>
-                    <option value="yes">Traveling with Pets</option> 
-                </select>
-            </div>
-
-            <div class="form-group">
-                <textarea id="specialRequests" rows="2" placeholder="Message to host..."></textarea>
-            </div>
-
-            <button id="btnSubmitFinal" class="btn-continue active">Request to Book</button>
-            <div id="statusMessage"></div>
+            <button id="continue-to-guests" class="btn-primary" disabled>Continue</button>
         </div>
 
+        <div id="step-guests" class="step">
+            <button class="back-btn" onclick="goToStep('calendar')">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="15 18 9 12 15 6"></polyline>
+                </svg>
+                Back
+            </button>
+            
+            <h2>Guest Details</h2>
+            
+            <form id="guest-form">
+                <div class="form-group">
+                    <label for="guest-name">Full Name *</label>
+                    <input type="text" id="guest-name" required placeholder="John Doe">
+                </div>
+                
+                <div class="form-group">
+                    <label for="guest-email">Email Address *</label>
+                    <input type="email" id="guest-email" required placeholder="john@example.com">
+                </div>
+                
+                <div class="form-group">
+                    <label for="guest-phone">Phone Number *</label>
+                    <input type="tel" id="guest-phone" required placeholder="+39 ...">
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="num-adults">Adults (13+) *</label>
+                        <select id="num-adults" required>
+                            <option value="1">1</option>
+                            <option value="2" selected>2</option>
+                            <option value="3">3</option>
+                            <option value="4">4</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="num-children">Children (0-12)</label>
+                        <select id="num-children">
+                            <option value="0" selected>0</option>
+                            <option value="1">1</option>
+                            <option value="2">2</option>
+                            <option value="3">3</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="pets">Pets *</label>
+                    <select id="pets" required>
+                        <option value="no" selected>No</option>
+                        <option value="yes">Yes</option>
+                    </select>
+                    <small style="color: #666; font-size: 12px; margin-top: 4px; display: block;">Small pets allowed. Supplement may apply.</small>
+                </div>
+                
+                <div class="form-group">
+                    <label for="special-requests">Special Requests</label>
+                    <textarea id="special-requests" rows="3" placeholder="Arrival time, etc."></textarea>
+                </div>
+                
+                <div id="guest-limit-warning" class="warning-message" style="display: none;">
+                    Maximum 4 guests allowed.
+                </div>
+                
+                <button type="button" id="continue-to-policy" class="btn-primary">Continue</button>
+            </form>
+        </div>
+
+        <div id="step-policy" class="step">
+            <button class="back-btn" onclick="goToStep('guests')">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="15 18 9 12 15 6"></polyline>
+                </svg>
+                Back
+            </button>
+            
+            <h2>Summary & Policies</h2>
+            
+            <div class="summary-card">
+                <h3>Your Reservation</h3>
+                <div class="summary-row"><span>Check-in:</span> <strong id="summary-checkin"></strong></div>
+                <div class="summary-row"><span>Check-out:</span> <strong id="summary-checkout"></strong></div>
+                <div class="summary-row"><span>Duration:</span> <strong id="summary-nights"></strong></div>
+                <div class="summary-row"><span>Guests:</span> <strong id="summary-guests"></strong></div>
+                <div class="summary-row"><span>Pets:</span> <strong id="summary-pets"></strong></div>
+            </div>
+            
+            <div class="policy-section">
+                <h3>Booking Conditions</h3>
+                <ul>
+                    <li>Payment details will be sent via email upon confirmation.</li>
+                    <li>Tourist tax: €1.00 per person/night (paid locally).</li>
+                    <li>Cleaning fee included in final quote if applicable.</li>
+                    <li>Check-in: 15:00 - 20:00 | Check-out: by 10:00.</li>
+                </ul>
+            </div>
+            
+            <div class="checkbox-group">
+                <label class="checkbox-label">
+                    <input type="checkbox" id="accept-policy" required>
+                    <span>I accept the booking conditions and privacy policy.</span>
+                </label>
+            </div>
+            
+            <button id="send-request" class="btn-primary" disabled>Send Request</button>
+        </div>
+
+        <div id="step-confirmation" class="step">
+            <div class="confirmation-content">
+                <div class="success-icon">
+                    <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                        <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                    </svg>
+                </div>
+                <h2>Request Sent!</h2>
+                <p>Thank you. We will confirm availability via email at <strong id="confirmation-email"></strong> shortly.</p>
+                <p class="confirmation-note">Please check your Spam folder.</p>
+                <button onclick="resetWidget()" class="btn-secondary">New Booking</button>
+            </div>
+        </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-
-    <script>
-        // 🔴 URL GOOGLE APPS SCRIPT (Il tuo URL)
-        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzN6Uu-O1HtTg_JfjhJzxQBodVY7xuEXEoCzC57VFcqUDiKxDcl63P3jNc0X8MErNDIJg/exec";
-        
-        let selectedDatesObj = [];
-
-        // 1. CARICAMENTO DATE BLOCCATE
-        fetch(GOOGLE_SCRIPT_URL)
-        .then(response => response.json())
-        .then(bookedDates => {
-            console.log("Date occupate:", bookedDates);
-            initCalendar(bookedDates);
-        })
-        .catch(error => {
-            console.error("Errore caricamento date:", error);
-            initCalendar([]); 
-        });
-
-        function initCalendar(disableDates) {
-            flatpickr("#dateRangeInput", {
-                mode: "range",          // Permette selezione DA - A
-                inline: true,           // Calendario sempre visibile
-                minDate: "today",
-                dateFormat: "Y-m-d",
-                disable: disableDates,  // Blocca le date dal foglio Google
-                locale: {
-                    firstDayOfWeek: 1 // Inizia da Lunedì
-                },
-                onChange: function(selectedDates, dateStr, instance) {
-                    selectedDatesObj = selectedDates;
-                    updateUI(selectedDates);
-                }
-            });
-        }
-
-        // AGGIORNA UI (Scritte sotto il calendario)
-        function updateUI(dates) {
-            const checkInText = document.getElementById('checkInText');
-            const checkOutText = document.getElementById('checkOutText');
-            const btn = document.getElementById('btnStep1');
-
-            if (dates.length > 0) {
-                checkInText.innerText = formatDate(dates[0]);
-                checkInText.classList.add('selected');
-            } else {
-                checkInText.innerText = "Select date";
-                checkInText.classList.remove('selected');
-            }
-
-            if (dates.length > 1) {
-                checkOutText.innerText = formatDate(dates[1]);
-                checkOutText.classList.add('selected');
-                
-                // Attiva bottone
-                btn.classList.add('active');
-                btn.removeAttribute('disabled');
-                btn.innerText = "Continue";
-            } else {
-                checkOutText.innerText = "Select date";
-                checkOutText.classList.remove('selected');
-                
-                // Disattiva bottone
-                btn.classList.remove('active');
-                btn.setAttribute('disabled', 'true');
-            }
-        }
-
-        // FORMATTA DATA (es. 16 Jan)
-        function formatDate(dateObj) {
-            const options = { month: 'short', day: 'numeric' };
-            return dateObj.toLocaleDateString('en-US', options);
-        }
-
-        // GESTIONE CLICK "CONTINUE"
-        document.getElementById('btnStep1').addEventListener('click', function() {
-            if (selectedDatesObj.length < 2) return;
-            
-            // Nasconde calendario, mostra form dettagli
-            document.querySelector('.calendar-wrapper').style.display = 'none';
-            document.querySelector('.header').style.display = 'none';
-            document.querySelector('#btnStep1').style.display = 'none';
-            
-            document.getElementById('guestDetailsForm').style.display = 'block';
-        });
-
-        // INVIO FINALE
-        document.getElementById('btnSubmitFinal').addEventListener('click', function(e) {
-            e.preventDefault();
-            
-            const btn = document.getElementById('btnSubmitFinal');
-            const msg = document.getElementById('statusMessage');
-
-            btn.disabled = true;
-            btn.innerText = "Sending...";
-
-            // Date formattate per Google Sheet (DD/MM/YYYY)
-            const d1 = selectedDatesObj[0];
-            const d2 = selectedDatesObj[1];
-            
-            const checkInStr = `${d1.getDate()}/${d1.getMonth()+1}/${d1.getFullYear()}`;
-            const checkOutStr = `${d2.getDate()}/${d2.getMonth()+1}/${d2.getFullYear()}`;
-
-            const formData = {
-                checkIn: checkInStr,
-                checkOut: checkOutStr,
-                adults: document.getElementById('adults').value,
-                children: document.getElementById('children').value,
-                totalGuests: parseInt(document.getElementById('adults').value) + parseInt(document.getElementById('children').value),
-                guestName: document.getElementById('guestName').value,
-                guestEmail: document.getElementById('guestEmail').value,
-                guestPhone: document.getElementById('guestPhone').value,
-                pets: document.getElementById('pets').value,
-                specialRequests: document.getElementById('specialRequests').value
-            };
-
-            fetch(GOOGLE_SCRIPT_URL, {
-                method: 'POST',
-                body: JSON.stringify(formData)
-            })
-            .then(res => {
-                document.getElementById('guestDetailsForm').innerHTML = 
-                    `<div class="success-msg" style="display:block">
-                        <h3>Request Sent!</h3>
-                        <p>We have received your request for <b>${checkInStr} - ${checkOutStr}</b>.</p>
-                        <p>We will email you shortly.</p>
-                    </div>`;
-            })
-            .catch(error => {
-                console.error(error);
-                // Fallback successo
-                document.getElementById('guestDetailsForm').innerHTML = 
-                    `<div class="success-msg" style="display:block"><h3>Request Sent!</h3><p>Thank you.</p></div>`;
-            });
-        });
-
-    </script>
+    <script src="calendar.js"></script>
 </body>
 </html>
