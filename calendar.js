@@ -5,10 +5,10 @@ const CONFIG = {
     // ID Calendario del Metrone
     calendarId: '9cfddfe8fa84f5e592da10625ceb9f9a58629d23b47fe50d3fca97ed2fe6e798@group.calendar.google.com',
     
-    // IL TUO URL DI APPS SCRIPT (Quello nuovo che hai pubblicato)
+    // IL TUO URL DI APPS SCRIPT
     webAppUrl: 'https://script.google.com/macros/s/AKfycbwSxb4vDEStHjj1CthAA7OU1yFTRUvtgbjTbs-jY7INvnV65G68nRgg8ruJzKhDSQ6Z9g/exec',
     
-    minNights: 2, // Ho impostato 2 notti come da tua richiesta precedente
+    minNights: 2, 
     maxGuests: 12,
     email: 'metronecustoza@gmail.com'
 };
@@ -209,13 +209,10 @@ function hasBlockedDatesInRange(startDate, endDate) {
     return false;
 }
 
-// === MODIFICATO: Carica le date dal tuo Apps Script invece che dall'API Google ===
-// Questo risolve i problemi di API Key e funziona direttamente con il tuo foglio/calendario
 async function loadBlockedDates() {
     try {
         console.log('Loading blocked dates from Apps Script...');
         
-        // Chiamata GET al tuo script (funzione doGet)
         const response = await fetch(CONFIG.webAppUrl);
         const data = await response.json();
         
@@ -227,11 +224,9 @@ async function loadBlockedDates() {
                     let currentDate = new Date(range.from);
                     const endDate = new Date(range.to);
                     
-                    // Normalizziamo le date a mezzanotte
                     currentDate.setHours(0,0,0,0);
                     endDate.setHours(0,0,0,0);
 
-                    // Blocchiamo i giorni (escluso il giorno di checkout)
                     while (currentDate < endDate) {
                         const dateStr = currentDate.toISOString().split('T')[0];
                         if (!state.blockedDates.includes(dateStr)) {
@@ -247,7 +242,6 @@ async function loadBlockedDates() {
         renderCalendar();
     } catch (error) {
         console.error('Error loading blocked dates:', error);
-        // Non mostriamo alert fastidiosi all'utente, il calendario resterà aperto
     }
 }
 
@@ -345,6 +339,9 @@ function updateSummary() {
     document.getElementById('summary-pets').textContent = petsText;
 }
 
+// -----------------------------------------------------
+// FUNZIONE CORRETTA E DEFINITIVA PER L'INVIO
+// -----------------------------------------------------
 function sendBookingRequest() {
     const nights = calculateNights(state.checkInDate, state.checkOutDate);
     const totalGuests = state.guestData.adults + state.guestData.children;
@@ -369,35 +366,28 @@ function sendBookingRequest() {
     };
     
     fetch(CONFIG.webAppUrl, {
-    method: 'POST',
-    headers: {
-        'Content-Type': 'application/json'
-    },
-    body: JSON.stringify(bookingData)
-})
-.then(response => {
-    if (!response.ok) {
-        throw new Error('Server error');
-    }
-    return response.json();
-})
-.then(result => {
-    console.log('Apps Script response:', result);
-
-    if (result.result !== 'success') {
-        throw new Error('Script returned error');
-    }
-
-    document.getElementById('confirmation-email').textContent = state.guestData.email;
-    goToStep('confirmation');
-})
-.catch(error => {
-    console.error('Error sending request:', error);
-    alert('Error sending request. Please contact us at ' + CONFIG.email);
-    sendButton.textContent = originalText;
-    sendButton.disabled = false;
-});
-
+        method: 'POST',
+        // IMPORTANTISSIMO: mode 'no-cors' per evitare blocchi Google
+        mode: 'no-cors', 
+        headers: {
+            // IMPORTANTISSIMO: text/plain per evitare preflight OPTIONS
+            'Content-Type': 'text/plain' 
+        },
+        body: JSON.stringify(bookingData)
+    })
+    .then(response => {
+        // Con no-cors non possiamo leggere la risposta JSON.
+        // Se arriviamo qui, assumiamo successo.
+        console.log('Request sent successfully (opaque response)');
+        document.getElementById('confirmation-email').textContent = state.guestData.email;
+        goToStep('confirmation');
+    })
+    .catch(error => {
+        console.error('Error sending request:', error);
+        alert('Error sending request. Please contact us at ' + CONFIG.email);
+        sendButton.textContent = originalText;
+        sendButton.disabled = false;
+    });
 }
 
 function resetWidget() {
